@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pebble Fetch Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 20px 16px;
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .container {
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #e8e8ee;
+      color: #666;
+    }
+
+    .badge.up { background: #e3f2fd; color: #1565c0; }
+    .badge.select { background: #e8f5e9; color: #2e7d32; }
+    .badge.down { background: #fff3e0; color: #e65100; }
+
+    .card-body {
+      display: none;
+    }
+
+    .card.open .card-body {
+      display: block;
+    }
+
+    .card.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .chevron {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.2s;
+      color: #999;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #fafafa;
+      color: #1a1a2e;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #4a6cf7;
+      background: #fff;
+    }
+
+    textarea {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .headers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .header-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .header-row input {
+      flex: 1;
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .btn-add {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .btn-add:hover {
+      background: #c8e6c9;
+    }
+
+    .btn-remove {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .btn-remove:hover {
+      background: #ffcdd2;
+    }
+
+    .body-field {
+      display: none;
+    }
+
+    .body-field.visible {
+      display: block;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:active {
+      opacity: 0.8;
+    }
+
+    .btn-save {
+      background: #4a6cf7;
+      color: #fff;
+    }
+
+    .btn-cancel {
+      background: #e8e8ee;
+      color: #666;
+    }
+
+    .add-header-btn {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>Pebble Fetch</header>
+  <div class="container" id="app"></div>
+  <div class="actions">
+    <button class="btn btn-cancel" id="cancel">Cancel</button>
+    <button class="btn btn-save" id="save">Save</button>
+  </div>
+
+  <script>
+    var BUTTONS = [
+      { name: 'Up', cssClass: 'up' },
+      { name: 'Select', cssClass: 'select' },
+      { name: 'Down', cssClass: 'down' }
+    ];
+    var METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+    var METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH'];
+
+    var options = {};
+    if (location.hash && location.hash.length > 1) {
+      try {
+        options = JSON.parse(decodeURIComponent(location.hash.substring(1)));
+      } catch (e) {
+        console.log('Failed to parse options from hash');
+      }
+    }
+
+    var requests = (options.requests || [null, null, null]).slice(0, 3);
+    while (requests.length < 3) requests.push(null);
+
+    var app = document.getElementById('app');
+
+    function createHeaderRow(container, key, value) {
+      var row = document.createElement('div');
+      row.className = 'header-row';
+
+      var keyInput = document.createElement('input');
+      keyInput.type = 'text';
+      keyInput.placeholder = 'Key';
+      keyInput.value = key || '';
+
+      var valueInput = document.createElement('input');
+      valueInput.type = 'text';
+      valueInput.placeholder = 'Value';
+      valueInput.value = value || '';
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-icon btn-remove';
+      removeBtn.textContent = '\u2212';
+      removeBtn.addEventListener('click', function () {
+        container.removeChild(row);
+      });
+
+      row.appendChild(keyInput);
+      row.appendChild(valueInput);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    }
+
+    for (var i = 0; i < 3; i++) {
+      (function (index) {
+        var req = requests[index] || {};
+        var btn = BUTTONS[index];
+
+        var card = document.createElement('div');
+        card.className = 'card' + (req.url ? ' open' : '');
+
+        var headerDiv = document.createElement('div');
+        headerDiv.className = 'card-header';
+        headerDiv.innerHTML =
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<span class="badge ' + btn.cssClass + '">' + btn.name + '</span>' +
+            '<h2 id="card-title-' + index + '">' + (req.name || 'Request ' + (index + 1)) + '</h2>' +
+          '</div>' +
+          '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+
+        headerDiv.addEventListener('click', function () {
+          card.classList.toggle('open');
+        });
+
+        var bodyDiv = document.createElement('div');
+        bodyDiv.className = 'card-body';
+
+        // Name field
+        var nameField = document.createElement('div');
+        nameField.className = 'field';
+        nameField.innerHTML = '<label>Name</label>';
+        var nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.placeholder = 'e.g. Turn on lights';
+        nameInput.value = req.name || '';
+        nameInput.id = 'name-' + index;
+        nameInput.addEventListener('input', function () {
+          var title = document.getElementById('card-title-' + index);
+          title.textContent = nameInput.value || 'Request ' + (index + 1);
+        });
+        nameField.appendChild(nameInput);
+
+        // URL field
+        var urlField = document.createElement('div');
+        urlField.className = 'field';
+        urlField.innerHTML = '<label>URL</label>';
+        var urlInput = document.createElement('input');
+        urlInput.type = 'url';
+        urlInput.placeholder = 'https://example.com/api';
+        urlInput.value = req.url || '';
+        urlInput.id = 'url-' + index;
+        urlField.appendChild(urlInput);
+
+        // Method field
+        var methodField = document.createElement('div');
+        methodField.className = 'field';
+        methodField.innerHTML = '<label>Method</label>';
+        var methodSelect = document.createElement('select');
+        methodSelect.id = 'method-' + index;
+        for (var m = 0; m < METHODS.length; m++) {
+          var opt = document.createElement('option');
+          opt.value = METHODS[m];
+          opt.textContent = METHODS[m];
+          if (req.method === METHODS[m]) opt.selected = true;
+          methodSelect.appendChild(opt);
+        }
+        methodField.appendChild(methodSelect);
+
+        // Headers field
+        var headersField = document.createElement('div');
+        headersField.className = 'field';
+        headersField.innerHTML = '<label>Headers</label>';
+        var headersList = document.createElement('div');
+        headersList.className = 'headers-list';
+        headersList.id = 'headers-' + index;
+
+        if (req.headers && req.headers.length > 0) {
+          for (var h = 0; h < req.headers.length; h++) {
+            createHeaderRow(headersList, req.headers[h].key, req.headers[h].value);
+          }
+        }
+
+        var addHeaderBtn = document.createElement('button');
+        addHeaderBtn.type = 'button';
+        addHeaderBtn.className = 'btn-icon btn-add add-header-btn';
+        addHeaderBtn.textContent = '+';
+        addHeaderBtn.addEventListener('click', function () {
+          createHeaderRow(headersList, '', '');
+        });
+
+        headersField.appendChild(headersList);
+        headersField.appendChild(addHeaderBtn);
+
+        // Body field
+        var bodyField = document.createElement('div');
+        bodyField.className = 'field body-field' + (METHODS_WITH_BODY.indexOf(req.method || 'GET') !== -1 ? ' visible' : '');
+        bodyField.id = 'body-field-' + index;
+        bodyField.innerHTML = '<label>Body</label>';
+        var bodyTextarea = document.createElement('textarea');
+        bodyTextarea.placeholder = '{"key": "value"}';
+        bodyTextarea.value = req.body || '';
+        bodyTextarea.id = 'body-' + index;
+        bodyField.appendChild(bodyTextarea);
+
+        methodSelect.addEventListener('change', function () {
+          var show = METHODS_WITH_BODY.indexOf(methodSelect.value) !== -1;
+          bodyField.className = 'field body-field' + (show ? ' visible' : '');
+        });
+
+        bodyDiv.appendChild(nameField);
+        bodyDiv.appendChild(urlField);
+        bodyDiv.appendChild(methodField);
+        bodyDiv.appendChild(headersField);
+        bodyDiv.appendChild(bodyField);
+
+        card.appendChild(headerDiv);
+        card.appendChild(bodyDiv);
+        app.appendChild(card);
+      })(i);
+    }
+
+    function collectData() {
+      var result = [];
+      for (var i = 0; i < 3; i++) {
+        var name = document.getElementById('name-' + i).value.trim();
+        var url = document.getElementById('url-' + i).value.trim();
+        var method = document.getElementById('method-' + i).value;
+        var body = document.getElementById('body-' + i).value;
+
+        var headers = [];
+        var headerRows = document.getElementById('headers-' + i).querySelectorAll('.header-row');
+        for (var h = 0; h < headerRows.length; h++) {
+          var inputs = headerRows[h].querySelectorAll('input');
+          var key = inputs[0].value.trim();
+          var value = inputs[1].value.trim();
+          if (key || value) {
+            headers.push({ key: key, value: value });
+          }
+        }
+
+        if (url) {
+          result.push({
+            name: name || 'Request ' + (i + 1),
+            url: url,
+            method: method,
+            headers: headers,
+            body: body
+          });
+        } else {
+          result.push(null);
+        }
+      }
+      return result;
+    }
+
+    document.getElementById('save').addEventListener('click', function () {
+      var data = { requests: collectData() };
+      document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(data));
+    });
+
+    document.getElementById('cancel').addEventListener('click', function () {
+      document.location = 'pebblejs://close';
+    });
+  </script>
+</body>
+</html>
