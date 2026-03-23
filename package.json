@@ -2,12 +2,39 @@
   "name": "pebble-fetch",
   "version": "1.0.0",
   "description": "Pebble watch app to quickly send configured HTTP requests",
+  "author": "Paul Em",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "build:pebble": "tsc && pebble build"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
   },
-  "license": "MIT"
+  "pebble": {
+    "displayName": "Pebble Fetch",
+    "uuid": "65d17f96-032d-4dc3-a5ca-7999e1adcc20",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "capabilities": [
+      "configurable"
+    ],
+    "messageKeys": [],
+    "resources": {
+      "media": []
+    }
+  },
+  "dependencies": {
+    "pebblejs": "^1.0.0"
+  }
 }

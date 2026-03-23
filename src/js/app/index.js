@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var UI = require("ui");
-var ajax = require("ajax");
-var Settings = require("settings");
-var Vibe = require("ui/vibe");
+require("pebblejs");
+var UI = require("pebblejs/ui");
+var ajax = require("pebblejs/lib/ajax");
+var Settings = require("pebblejs/settings");
 var CONFIG_URL = 'https://paul-em.github.io/pebble-fetch/';
 Settings.config({ url: CONFIG_URL, autoSave: true }, function () {
     console.log('Config page opened');
@@ -64,12 +64,12 @@ function executeRequest(config) {
         }
     }
     ajax(ajaxOpts, function (_data, status) {
-        Vibe.vibrate('short');
+        UI.Vibe.vibrate('short');
         loadingCard.title('Success');
         loadingCard.body('Status: ' + status);
         setTimeout(function () { loadingCard.hide(); }, 3000);
     }, function (error, status) {
-        Vibe.vibrate('double');
+        UI.Vibe.vibrate('double');
         loadingCard.title('Failed');
         loadingCard.body('Status: ' + (status || 'unknown') + '\n' + (error || ''));
         setTimeout(function () { loadingCard.hide(); }, 3000);
@@ -85,7 +85,7 @@ function handleButton(index) {
         executeRequest(config);
     }
     else {
-        Vibe.vibrate('long');
+        UI.Vibe.vibrate('long');
         var noConfigCard = new UI.Card({
             title: 'Not Configured',
             body: 'Open settings on\nyour phone to\nconfigure this button.'

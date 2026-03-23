@@ -1,4 +1,6 @@
-declare module 'ui' {
+declare module 'pebblejs' {}
+
+declare module 'pebblejs/ui' {
   interface CardOptions {
     title?: string;
     subtitle?: string;
@@ -16,10 +18,14 @@ declare module 'ui' {
     on(event: 'click', button: 'up' | 'select' | 'down' | 'back', callback: () => void): void;
   }
 
-  export { Card, CardOptions };
+  class Vibe {
+    static vibrate(type?: 'short' | 'long' | 'double'): void;
+  }
+
+  export { Card, CardOptions, Vibe };
 }
 
-declare module 'ajax' {
+declare module 'pebblejs/lib/ajax' {
   interface AjaxOptions {
     url: string;
     method?: string;
@@ -38,7 +44,7 @@ declare module 'ajax' {
   export = ajax;
 }
 
-declare module 'settings' {
+declare module 'pebblejs/settings' {
   interface ConfigOptions {
     url: string;
     autoSave?: boolean;
@@ -55,9 +61,4 @@ declare module 'settings' {
   function option(key: string, value: any): void;
   function option(opts: Record<string, any>): void;
   export { config, option };
-}
-
-declare module 'ui/vibe' {
-  function vibrate(type?: 'short' | 'long' | 'double'): void;
-  export { vibrate };
 }

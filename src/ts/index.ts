@@ -1,7 +1,7 @@
-import UI = require('ui');
-import ajax = require('ajax');
-import Settings = require('settings');
-import Vibe = require('ui/vibe');
+import 'pebblejs';
+import UI = require('pebblejs/ui');
+import ajax = require('pebblejs/lib/ajax');
+import Settings = require('pebblejs/settings');
 
 interface RequestHeader {
   key: string;
@@ -97,13 +97,13 @@ function executeRequest(config: RequestConfig): void {
 
   ajax(ajaxOpts,
     function (_data: any, status: number) {
-      Vibe.vibrate('short');
+      UI.Vibe.vibrate('short');
       loadingCard.title('Success');
       loadingCard.body('Status: ' + status);
       setTimeout(function () { loadingCard.hide(); }, 3000);
     },
     function (error: any, status: number) {
-      Vibe.vibrate('double');
+      UI.Vibe.vibrate('double');
       loadingCard.title('Failed');
       loadingCard.body('Status: ' + (status || 'unknown') + '\n' + (error || ''));
       setTimeout(function () { loadingCard.hide(); }, 3000);
@@ -121,7 +121,7 @@ function handleButton(index: number): void {
   if (config && config.url) {
     executeRequest(config);
   } else {
-    Vibe.vibrate('long');
+    UI.Vibe.vibrate('long');
     var noConfigCard = new UI.Card({
       title: 'Not Configured',
       body: 'Open settings on\nyour phone to\nconfigure this button.'
