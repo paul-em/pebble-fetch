@@ -122,7 +122,7 @@ static void window_load(Window *window) {
 
   // Title
   s_title_layer = create_text_layer(GRect(0, y_start, w, 28), title_font, GTextAlignmentCenter);
-  text_layer_set_text(s_title_layer, "Pebble Fetch");
+  text_layer_set_text(s_title_layer, "Fetch");
   layer_add_child(root, text_layer_get_layer(s_title_layer));
 
   // Request rows
