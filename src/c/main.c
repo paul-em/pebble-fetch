@@ -7,9 +7,9 @@ static TextLayer *s_select_layer;
 static TextLayer *s_down_layer;
 static TextLayer *s_status_layer;
 
-static char s_up_text[64] = "\u2191  (not set)";
-static char s_select_text[64] = "\u2192  (not set)";
-static char s_down_text[64] = "\u2193  (not set)";
+static char s_up_text[64] = "UP: (not set)";
+static char s_select_text[64] = "OK: (not set)";
+static char s_down_text[64] = "DN: (not set)";
 static char s_status_text[64] = "";
 
 static void send_button_press(int index) {
@@ -48,9 +48,9 @@ static void update_request_name(int index, const char *name) {
   const char *prefix;
 
   switch (index) {
-    case 0: buf = s_up_text; layer = s_up_layer; prefix = "\u2191  "; break;
-    case 1: buf = s_select_text; layer = s_select_layer; prefix = "\u2192  "; break;
-    case 2: buf = s_down_text; layer = s_down_layer; prefix = "\u2193  "; break;
+    case 0: buf = s_up_text; layer = s_up_layer; prefix = "UP: "; break;
+    case 1: buf = s_select_text; layer = s_select_layer; prefix = "OK: "; break;
+    case 2: buf = s_down_text; layer = s_down_layer; prefix = "DN: "; break;
     default: return;
   }
 
@@ -112,7 +112,7 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(root);
   int w = bounds.size.w;
 
-  GFont title_font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
+  GFont title_font = fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK);
   GFont body_font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
   GFont status_font = fonts_get_system_font(FONT_KEY_GOTHIC_18);
 
@@ -121,12 +121,12 @@ static void window_load(Window *window) {
   int pad = PBL_IF_ROUND_ELSE(30, 8);
 
   // Title
-  s_title_layer = create_text_layer(GRect(0, y_start, w, 28), title_font, GTextAlignmentCenter);
-  text_layer_set_text(s_title_layer, "Fetch");
+  s_title_layer = create_text_layer(GRect(0, y_start, w, 36), title_font, GTextAlignmentCenter);
+  text_layer_set_text(s_title_layer, "fetch");
   layer_add_child(root, text_layer_get_layer(s_title_layer));
 
   // Request rows
-  int row_y = y_start + 34;
+  int row_y = y_start + 40;
   s_up_layer = create_text_layer(GRect(pad, row_y, w - pad * 2, row_h), body_font, GTextAlignmentLeft);
   text_layer_set_text(s_up_layer, s_up_text);
   layer_add_child(root, text_layer_get_layer(s_up_layer));
