@@ -19,11 +19,7 @@ function sendRequestNames() {
     var key = 'RequestName' + i;
     msg[key] = requests[i] && requests[i].name ? requests[i].name : '';
   }
-  Pebble.sendAppMessage(msg, function () {
-    console.log('Names sent to watch');
-  }, function (e) {
-    console.log('Failed to send names: ' + JSON.stringify(e));
-  });
+  Pebble.sendAppMessage(msg);
 }
 
 function executeRequest(index) {
@@ -90,14 +86,12 @@ function executeRequest(index) {
 }
 
 Pebble.addEventListener('ready', function () {
-  console.log('PebbleKit JS ready');
   sendRequestNames();
 });
 
 Pebble.addEventListener('appmessage', function (e) {
   var buttonIndex = e.payload.ButtonIndex;
   if (buttonIndex !== undefined) {
-    console.log('Button pressed: ' + buttonIndex);
     executeRequest(buttonIndex);
   }
 });
