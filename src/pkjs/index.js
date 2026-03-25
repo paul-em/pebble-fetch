@@ -12,6 +12,14 @@ function getRequests() {
   return [null, null, null];
 }
 
+function hasStoredRequests() {
+  var requests = getRequests();
+  for (var i = 0; i < requests.length; i++) {
+    if (requests[i] !== null) return true;
+  }
+  return false;
+}
+
 function sendRequestNames() {
   var requests = getRequests();
   var msg = {};
@@ -20,6 +28,11 @@ function sendRequestNames() {
     msg[key] = requests[i] && requests[i].name ? requests[i].name : '';
   }
   Pebble.sendAppMessage(msg);
+}
+
+function sendConfigToWatch(requests) {
+  var json = JSON.stringify({ requests: requests });
+  Pebble.sendAppMessage({ ConfigData: json });
 }
 
 function executeRequest(index) {
@@ -86,13 +99,32 @@ function executeRequest(index) {
 }
 
 Pebble.addEventListener('ready', function () {
-  sendRequestNames();
+  if (hasStoredRequests()) {
+    sendRequestNames();
+  } else {
+    // localStorage is empty — request backup from watch
+    Pebble.sendAppMessage({ RequestBackup: 1 });
+  }
 });
 
 Pebble.addEventListener('appmessage', function (e) {
   var buttonIndex = e.payload.ButtonIndex;
   if (buttonIndex !== undefined) {
     executeRequest(buttonIndex);
+  }
+
+  // Handle config restore from watch backup
+  var configData = e.payload.ConfigData;
+  if (configData) {
+    try {
+      var data = JSON.parse(configData);
+      if (data.requests) {
+        localStorage.setItem('requests', JSON.stringify(data.requests));
+        sendRequestNames();
+      }
+    } catch (err) {
+      console.log('Failed to restore config backup: ' + err);
+    }
   }
 });
 
@@ -109,6 +141,8 @@ Pebble.addEventListener('webviewclosed', function (e) {
       if (data.requests) {
         localStorage.setItem('requests', JSON.stringify(data.requests));
         sendRequestNames();
+        // Back up config to watch persistent storage
+        sendConfigToWatch(data.requests);
       }
     } catch (err) {
       console.log('Failed to parse config: ' + err);

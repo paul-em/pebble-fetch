@@ -1,6 +1,6 @@
 {
   "name": "pebble-fetch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pebble watch app to quickly send configured HTTP requests",
   "author": "Paul Em",
   "license": "MIT",
@@ -28,7 +28,9 @@
       "RequestName1",
       "RequestName2",
       "ResponseStatus",
-      "ResponseSuccess"
+      "ResponseSuccess",
+      "ConfigData",
+      "RequestBackup"
     ],
     "resources": {
       "media": []

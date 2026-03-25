@@ -1,5 +1,12 @@
 #include <pebble.h>
 
+// Persistent storage keys
+#define PERSIST_CONFIG_COUNT_KEY 100
+#define PERSIST_CONFIG_BASE_KEY 101
+#define PERSIST_CONFIG_MAX_CHUNKS 16
+#define PERSIST_CHUNK_SIZE 256
+#define PERSIST_NAME_BASE_KEY 200
+
 static Window *s_window;
 static TextLayer *s_title_layer;
 static TextLayer *s_up_layer;
@@ -11,6 +18,36 @@ static char s_up_text[64] = "UP: (not set)";
 static char s_select_text[64] = "OK: (not set)";
 static char s_down_text[64] = "DN: (not set)";
 static char s_status_text[64] = "";
+
+static void save_config_to_persist(const char *json) {
+  int len = strlen(json) + 1; // include null terminator
+  int chunks = (len + PERSIST_CHUNK_SIZE - 1) / PERSIST_CHUNK_SIZE;
+  if (chunks > PERSIST_CONFIG_MAX_CHUNKS) chunks = PERSIST_CONFIG_MAX_CHUNKS;
+  persist_write_int(PERSIST_CONFIG_COUNT_KEY, chunks);
+  for (int i = 0; i < chunks; i++) {
+    int offset = i * PERSIST_CHUNK_SIZE;
+    int chunk_len = len - offset;
+    if (chunk_len > PERSIST_CHUNK_SIZE) chunk_len = PERSIST_CHUNK_SIZE;
+    persist_write_data(PERSIST_CONFIG_BASE_KEY + i, json + offset, chunk_len);
+  }
+}
+
+static bool load_config_from_persist(char *buf, int buf_size) {
+  if (!persist_exists(PERSIST_CONFIG_COUNT_KEY)) return false;
+  int chunks = persist_read_int(PERSIST_CONFIG_COUNT_KEY);
+  if (chunks <= 0 || chunks > PERSIST_CONFIG_MAX_CHUNKS) return false;
+  int total = 0;
+  for (int i = 0; i < chunks; i++) {
+    int remaining = buf_size - total - 1;
+    if (remaining <= 0) break;
+    int read = persist_read_data(PERSIST_CONFIG_BASE_KEY + i, buf + total, remaining);
+    if (read < 0) break;
+    total += read;
+  }
+  buf[total] = '\0';
+  return total > 0;
+}
+
 
 static void send_button_press(int index) {
   DictionaryIterator *iter;
@@ -62,16 +99,58 @@ static void update_request_name(int index, const char *name) {
   text_layer_set_text(layer, buf);
 }
 
+static void load_persisted_names(void) {
+  const char *prefixes[] = {"UP: ", "OK: ", "DN: "};
+  char *bufs[] = {s_up_text, s_select_text, s_down_text};
+  for (int i = 0; i < 3; i++) {
+    if (persist_exists(PERSIST_NAME_BASE_KEY + i)) {
+      char name[64];
+      persist_read_string(PERSIST_NAME_BASE_KEY + i, name, sizeof(name));
+      if (strlen(name) > 0) {
+        snprintf(bufs[i], 64, "%s%s", prefixes[i], name);
+      }
+    }
+  }
+}
+
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
-  // Handle request names from phone
+  // Handle request names from phone — also persist them on the watch
   Tuple *name0 = dict_find(iter, MESSAGE_KEY_RequestName0);
-  if (name0) update_request_name(0, name0->value->cstring);
+  if (name0) {
+    update_request_name(0, name0->value->cstring);
+    persist_write_string(PERSIST_NAME_BASE_KEY + 0, name0->value->cstring);
+  }
 
   Tuple *name1 = dict_find(iter, MESSAGE_KEY_RequestName1);
-  if (name1) update_request_name(1, name1->value->cstring);
+  if (name1) {
+    update_request_name(1, name1->value->cstring);
+    persist_write_string(PERSIST_NAME_BASE_KEY + 1, name1->value->cstring);
+  }
 
   Tuple *name2 = dict_find(iter, MESSAGE_KEY_RequestName2);
-  if (name2) update_request_name(2, name2->value->cstring);
+  if (name2) {
+    update_request_name(2, name2->value->cstring);
+    persist_write_string(PERSIST_NAME_BASE_KEY + 2, name2->value->cstring);
+  }
+
+  // Handle config backup from phone
+  Tuple *config_data = dict_find(iter, MESSAGE_KEY_ConfigData);
+  if (config_data) {
+    save_config_to_persist(config_data->value->cstring);
+  }
+
+  // Handle backup restore request from phone
+  Tuple *request_backup = dict_find(iter, MESSAGE_KEY_RequestBackup);
+  if (request_backup && request_backup->value->int32) {
+    static char config_buf[PERSIST_CHUNK_SIZE * PERSIST_CONFIG_MAX_CHUNKS];
+    if (load_config_from_persist(config_buf, sizeof(config_buf))) {
+      DictionaryIterator *out;
+      if (app_message_outbox_begin(&out) == APP_MSG_OK) {
+        dict_write_cstring(out, MESSAGE_KEY_ConfigData, config_buf);
+        app_message_outbox_send();
+      }
+    }
+  }
 
   // Handle response status
   Tuple *success = dict_find(iter, MESSAGE_KEY_ResponseSuccess);
@@ -158,7 +237,10 @@ static void init(void) {
   app_message_register_inbox_received(inbox_received_handler);
   app_message_register_inbox_dropped(inbox_dropped_handler);
   app_message_register_outbox_failed(outbox_failed_handler);
-  app_message_open(256, 256);
+  app_message_open(4096, 4096);
+
+  // Load persisted request names so they show immediately
+  load_persisted_names();
 
   // Create window
   s_window = window_create();
